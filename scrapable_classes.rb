@@ -70,5 +70,9 @@ class StorageableInfo
 	def get_info doc
 		doc
 	end
+
+	def save formatted_info
+		put formatted_info
+	end
 end
 
