@@ -7,11 +7,28 @@ class Bills < StorageableInfo
 		super()
 		@model = 'bills'
 		@location = 'http://www.senado.cl/wspublico/tramitacion.php?boletin='
+		@bills_location = 'bills'
+	end
+
+	def doc_locations
+		bulletins = parse(read(@bills_location))
+		bulletins.map {|b| @location+b}
+	end
+
+	def parse doc
+		doc_arr = []
+		doc.split(/\n/).each do |pair|
+			key, val = pair.split(/\t/)
+			doc_arr.push(val)
+		end
+		doc_arr
 	end
 
 	def save formatted_info
 		#put formatted_info
+		p '<info>'
 		p formatted_info
+		p '</info>'
 	end
 
 	def format info
@@ -32,16 +49,10 @@ class Bills < StorageableInfo
 		}
 	end
 
-	def doc_locations
-		bulletins = ['8091-21', '8011-05']
-		bulletins.map {|b| @location+b}
-	end
-
 	def get_info doc
 
 		info = Hash.new
 		xml = Nokogiri::XML(doc)
-		p xml.at_css('boletin').text()
 		info['uid'] = xml.at_css('boletin').text()
 		info['title'] = xml.at_css('titulo').text()
 		info['creation_date'] = xml.at_css('fecha_ingreso').text()
