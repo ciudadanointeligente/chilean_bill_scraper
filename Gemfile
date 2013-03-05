@@ -6,3 +6,7 @@ gem 'rest-client'
 
 # PDF reader
 gem 'pdf-reader'
+
+# Hash.to_json
+gem 'activesupport'
+gem 'json'

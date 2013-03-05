@@ -15,11 +15,13 @@ module RestfulApiMethods
 	end
 
 	def put formatted_info
-		RestClient.put @API_url + @model, formatted_info, {:content_type => :json}
+		puts @API_url + @model
+		puts formatted_info
+		RestClient.put @API_url + @model + '/' + @id, formatted_info, {:content_type => :json}
 	end
 
 	def post formatted_info
-		RestClient.post @API_url + @model, formatted_info, {:content_type => :json}
+		RestClient.post @API_url + @model + '/' + @id, formatted_info, {:content_type => :json}
 	end
 end
 
@@ -27,13 +29,15 @@ class StorageableInfo
 	include RestfulApiMethods
 
 	def initialize(location = '')
-		@API_url = 'http://api.ciudadanointeligente.cl/billit/cl/'
+		# @API_url = 'http://api.ciudadanointeligente.cl/billit/cl/'
+		@API_url = 'localhost:9292/'
 		@location = location
 	end
 
 	def process
 		doc_locations.each do |doc_location|
 			begin
+				p doc_location
 				doc = read doc_location
 				info = get_info doc
 				formatted_info = format info
