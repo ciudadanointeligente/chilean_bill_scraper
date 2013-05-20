@@ -13,7 +13,7 @@ class Bills < StorageableInfo
 	end
 
 	def doc_locations
-		bulletins = 8804.downto(1)
+		bulletins = 8952.downto(1)
 		# bulletins = parse(read(@bills_location))
 		bulletins.map {|b| @location+b.to_s}
 	end
@@ -28,99 +28,255 @@ class Bills < StorageableInfo
 	end
 
 	def save formatted_info
-		puts "<info>"
-		puts formatted_info
-		puts "</info>"
-		put formatted_info
-		# p '<info>'
-		# p formatted_info
-		# p '</info>'
+		# puts @API_url + @model
+		# puts formatted_info
+		post formatted_info
 	end
 
 	def format info
-		formatted_info = {
-    		:uid => info['uid'],
-            :title => info['title'],
-            :summary => info['summary'],
-			:tags => info['tags'],
-			:matters => info['matters'],
-			:stage => info['stage'],
-			:creation_date => info['creation_date'],
-			:publish_date => info['publish_date'],
-			:authors => info['authors'],
-			:origin_chamber => info['origin_chamber'],
-			:current_urgency => info['current_urgency'],
-			:table_history => info['table_history'],
-			:link_law => info['link_law'],
-			:events => info['events'],
-			:urgencies => info['urgencies'],
-			:reports => info['reports']
-		}.to_json
-		@id = info['uid']
+		authors = info[:authors].map{|x| x.values}.flatten
+		matters = info[:matters].map{|x| x.values}.flatten
+		merged = info[:merged].split('/')
+
+		formatted_info = {bill:
+			{
+	    		:uid => info[:uid],
+	            :title => info[:title],
+				:creation_date => info[:creation_date],
+				:initiative => info[:initiative],
+				:origin_chamber => info[:origin_chamber],
+				:current_urgency => info[:current_urgency],
+				:stage => info[:stage],
+				:sub_stage => info[:sub_stage],
+				:state => info[:state],
+				:law => info[:law],
+				:link_law => info[:link_law],
+				:merged => merged,
+				:matters => matters,
+				:authors => authors,
+				#
+				:events => info[:events],
+				:urgencies => info[:urgencies],
+				:reports => info[:reports],
+				:modifications => info[:modifications],
+				:documents => info[:documents],
+				:instructions => info[:instructions],
+				:observations => info[:observations],
+				#not present
+				:publish_date => info[:publish_date],
+	            :summary => info[:summary],
+				:tags => info[:tags]
+			}.to_json
+		}
+		@id = info[:uid]
 		formatted_info
 	end
 
-
-	#
-	def get_info doc
+    def get_info doc
 
 		info = Hash.new
 		xml = Nokogiri::XML(doc)
-		info['uid'] = xml.at_css('boletin').text() if xml.at_css('boletin')
-		info['title'] = xml.at_css('titulo').text() if xml.at_css('titulo')
-		info['creation_date'] = xml.at_css('fecha_ingreso').text() if xml.at_css('fecha_ingreso')
-		info['initiative'] = xml.at_css('iniciativa').text() if xml.at_css('iniciativa')
-		info['origin_chamber'] = xml.at_css('camara_origen').text() if xml.at_css('camara_origen')
-		info['current_urgency'] = xml.at_css('urgencia_actual').text() if xml.at_css('urgencia_actual')
-		info['events'] = get_events xml if xml.xpath('//tramitacion/tramite')
-		info['urgencies'] = get_urgencies xml if xml.xpath('//urgencias/urgencia')
-		info['reports'] = get_reports xml if xml.xpath('//informes/informe')
-
+		info[:uid] = xml.at_css('boletin').text() if xml.at_css('boletin')
+		info[:title] = xml.at_css('titulo').text() if xml.at_css('titulo')
+		info[:creation_date] = xml.at_css('fecha_ingreso').text() if xml.at_css('fecha_ingreso')
+		info[:initiative] = xml.at_css('iniciativa').text() if xml.at_css('iniciativa')
+		info[:origin_chamber] = xml.at_css('camara_origen').text() if xml.at_css('camara_origen')
+		info[:current_urgency] = xml.at_css('urgencia_actual').text() if xml.at_css('urgencia_actual')
+		info[:stage] = xml.at_css('etapa').text() if xml.at_css('etapa')
+		info[:sub_stage] = xml.at_css('subetapa').text() if xml.at_css('subetapa')
+		info[:law] = xml.at_css('leynro').text() if xml.at_css('leynro')
+		info[:link_law] = xml.at_css('diariooficial').text() if xml.at_css('diariooficial')
+		info[:state] = xml.at_css('diariooficial').text() if xml.at_css('estado')
+		info[:merged] = xml.at_css('refundidos').text() if xml.at_css('refundidos')
+		fields.keys.each do |field|
+			info[field] = get_field_data xml, field
+		end
 		info
     end
 
-    def get_events nokogiri_xml
-    	events = []
-		tramites = nokogiri_xml.xpath('//tramitacion/tramite')
-		tramites.each do |tramite|
-			event = {}
-			event['session'] = tramite.at_css('SESION').text if tramite.at_css('SESION')
-			event['date'] = tramite.at_css('FECHA').text if tramite.at_css('FECHA')
-			event['description'] = tramite.at_css('DESCRIPCIONTRAMITE').text if tramite.at_css('DESCRIPCIONTRAMITE')
-			event['stage'] = tramite.at_css('ETAPDESCRIPCION').text if tramite.at_css('ETAPDESCRIPCION')
-			event['chamber'] = tramite.at_css('CAMARATRAMITE').text if tramite.at_css('CAMARATRAMITE')
-			events.push event
-		end
-		events
-	end
+    def get_field_data nokogiri_xml, field
+    	field = field.to_sym
+    	field_vals = []
+    	path = nokogiri_xml.xpath(fields[field][:xpath])
+    	path.each do |field_instance|
+    		field_val = {}
+    		fields[field][:sub_fields].each do |sub_field|
+    			name = sub_field[:name]
+    			css = sub_field[:css]
+    			field_val[name] = field_instance.at_css(css).text if field_instance.at_css(css)
+    		end
+    		field_vals.push(field_val)
+    	end if path
+    	field_vals
+    end
 
-    def get_urgencies nokogiri_xml
-    	events = []
-		tramites = nokogiri_xml.xpath('//urgencias/urgencia')
-		tramites.each do |tramite|
-			event = {}
-			event['type'] = tramite.at_css('TIPO').text if tramite.at_css('TIPO')
-			event['entry_date'] = tramite.at_css('FECHAINGRESO').text if tramite.at_css('FECHAINGRESO')
-			event['entry_message'] = tramite.at_css('MENSAJEINGRESO').text if tramite.at_css('MENSAJEINGRESO')
-			event['entry_chamber'] = tramite.at_css('CAMARAINGRESO').text if tramite.at_css('CAMARAINGRESO')
-			event['withdrawal_date'] = tramite.at_css('FECHARETIRO').text if tramite.at_css('FECHARETIRO')
-			event['withdrawal_message'] = tramite.at_css('MENSAJERETIRO').text if tramite.at_css('MENSAJERETIRO')
-			event['withdrawal_chamber'] = tramite.at_css('CAMARARETIRO').text if tramite.at_css('CAMARARETIRO')
-			events.push event
-		end
-		events
-	end
-
-    def get_reports nokogiri_xml
-    	events = []
-		tramites = nokogiri_xml.xpath('//informes/informe')
-		tramites.each do |tramite|
-			event = {}
-			event['date'] = tramite.at_css('FECHAINFORME').text if tramite.at_css('FECHAINFORME')
-			event['step'] = tramite.at_css('TRAMITE').text if tramite.at_css('TRAMITE')
-			event['stage'] = tramite.at_css('ETAPA').text if tramite.at_css('ETAPA')
-			events.push event
-		end
-		events
-	end
+    def fields
+    	{
+    		authors: {
+    			xpath: '//autores/autor',
+    			sub_fields: [
+    				{
+	    				name: 'author',
+	    				css: 'PARLAMENTARIO'
+	    			}
+	    		]
+    		},
+    		matters: {
+    			xpath: '//materias/materia',
+    			sub_fields: [
+	    			{
+	    				name: 'matter',
+	    				css: 'DESCRIPCION'
+	    			}
+	    		]
+    		},
+    		events: {
+    			xpath: '//tramitacion/tramite',
+    			sub_fields: [
+    				{
+	    				name: 'session',
+	    				css: 'SESION'
+	    			},
+	    			{
+	    				name: 'date',
+	    				css: 'FECHA'
+	    			},
+	    			{
+	    				name: 'description',
+	    				css: 'DESCRIPCIONTRAMITE'
+	    			},
+	    			{
+	    				name: 'stage',
+	    				css: 'ETAPDESCRIPCION'
+	    			},
+	    			{
+	    				name: 'chamber',
+	    				css: 'CAMARATRAMITE'
+	    			}
+    		 	]
+    		},
+    		urgencies: {
+    			xpath: '//urgencias/urgencia',
+    			sub_fields: [
+	    			{
+	    				name: 'type',
+	    				css: 'TIPO'
+	    			},
+	    			{
+	    				name: 'entry_date',
+	    				css: 'FECHAINGRESO'
+	    			},
+	    			{
+	    				name: 'entry_message',
+	    				css: 'MENSAJEINGRESO'
+	    			},
+	    			{
+	    				name: 'entry_chamber',
+	    				css: 'CAMARAINGRESO'
+	    			},
+	    			{
+	    				name: 'withdrawal_date',
+	    				css: 'FECHARETIRO'
+	    			},
+	    			{
+	    				name: 'withdrawal_message',
+	    				css: 'MENSAJERETIRO'
+	    			},
+	    			{
+	    				name: 'withdrawal_chamber',
+	    				css: 'CAMARARETIRO'
+	    			}
+	    		]
+    		},
+    		reports: {
+    			xpath: '//informes/informe',
+    			sub_fields: [
+	    			{
+	    				name: 'date',
+	    				css: 'FECHAINFORME'
+	    			},
+	    			{
+	    				name: 'step',
+	    				css: 'TRAMITE'
+	    			},
+	    			{
+	    				name: 'stage',
+	    				css: 'ETAPA'
+	    			}
+	    		]
+    		},
+    		modifications: {
+    			xpath: '//comparados/comparado',
+    			sub_fields: [
+    				{
+	    				name: 'modification',
+	    				css: 'COMPARADO'
+	    			}
+	    		]
+    		},
+    		documents: {
+    			xpath: '//oficios/oficio',
+    			sub_fields: [
+	    			{
+	    				name: 'number',
+	    				css: 'NUMERO'
+	    			},
+	    			{
+	    				name: 'date',
+	    				css: 'FECHA'
+	    			},
+	    			{
+	    				name: 'step',
+	    				css: 'TRAMITE'
+	    			},
+	    			{
+	    				name: 'stage',
+	    				css: 'ETAPA'
+	    			},
+	    			{
+	    				name: 'type',
+	    				css: 'TIPO'
+	    			},
+	    			{
+	    				name: 'chamber',
+	    				css: 'CAMARA'
+	    			}
+	    		]
+    		},
+    		instructions: {
+    			xpath: '//indicaciones/indicacion',
+    			sub_fields: [
+	    			{
+	    				name: 'date',
+	    				css: 'FECHA'
+	    			},
+	    			{
+	    				name: 'step',
+	    				css: 'TRAMITE'
+	    			},
+	    			{
+	    				name: 'stage',
+	    				css: 'ETAPA'
+	    			}
+	    		]
+    		},
+    		observations: {
+    			xpath: '//observaciones/observacion',
+    			sub_fields: [
+	    			{
+	    				name: 'date',
+	    				css: 'FECHA'
+	    			},
+	    			{
+	    				name: 'step',
+	    				css: 'TRAMITE'
+	    			},
+	    			{
+	    				name: 'stage',
+	    				css: 'ETAPA'
+	    			}
+	    		]
+    		}
+    	}
+    end
 end
