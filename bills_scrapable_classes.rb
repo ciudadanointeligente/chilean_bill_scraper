@@ -8,14 +8,13 @@ class Bills < StorageableInfo
 		super()
 		@model = 'bills'
 		@id = ''
-		@location = 'http://www.senado.cl/wspublico/tramitacion.php?boletin='
+		@last_update = RestClient.get 'billit.ciudadanointeligente.cl/bills/last_update'
+		@location = 'http://www.senado.cl/wspublico/tramitacion.php?fecha=' + @last_update
 		@bills_location = 'bills'
 	end
 
 	def doc_locations
-		bulletins = 8952.downto(1)
-		# bulletins = parse(read(@bills_location))
-		bulletins.map {|b| @location+b.to_s}
+		[@location]
 	end
 
 	def parse doc
@@ -28,7 +27,7 @@ class Bills < StorageableInfo
 	end
 
 	def save formatted_info
-		# puts @API_url + @model
+		# puts @location
 		# puts formatted_info
 		post formatted_info
 	end
