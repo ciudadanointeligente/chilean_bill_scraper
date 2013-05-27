@@ -50,7 +50,7 @@ class Bills < StorageableInfo
 				:sub_stage => info[:sub_stage],
 				:state => info[:state],
 				:law => info[:law],
-				:link_law => info[:link_law],
+				:publish_date => info[:publish_date],
 				:merged => merged,
 				:matters => matters,
 				:authors => authors,
@@ -63,7 +63,7 @@ class Bills < StorageableInfo
 				:instructions => info[:instructions],
 				:observations => info[:observations],
 				#not present
-				:publish_date => info[:publish_date],
+	            :link_law => info[:link_law],
 	            :summary => info[:summary],
 				:tags => info[:tags]
 			}.to_json
@@ -85,8 +85,8 @@ class Bills < StorageableInfo
 		info[:stage] = xml.at_css('etapa').text() if xml.at_css('etapa')
 		info[:sub_stage] = xml.at_css('subetapa').text() if xml.at_css('subetapa')
 		info[:law] = xml.at_css('leynro').text() if xml.at_css('leynro')
-		info[:link_law] = xml.at_css('diariooficial').text() if xml.at_css('diariooficial')
-		info[:state] = xml.at_css('diariooficial').text() if xml.at_css('estado')
+		info[:publish_date] = xml.at_css('diariooficial').text() if xml.at_css('diariooficial')
+		info[:state] = xml.at_css('estado').text() if xml.at_css('estado')
 		info[:merged] = xml.at_css('refundidos').text() if xml.at_css('refundidos')
 		fields.keys.each do |field|
 			info[field] = get_field_data xml, field
