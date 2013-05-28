@@ -8,22 +8,17 @@ class Bills < StorageableInfo
 		super()
 		@model = 'bills'
 		@id = ''
-		@last_update = RestClient.get 'billit.ciudadanointeligente.cl/bills/last_update'
-		@location = 'http://www.senado.cl/wspublico/tramitacion.php?fecha=' + @last_update
+		@last_update = RestClient.get 'billit.ciudadanointeligente.org/bills/last_update'
+		@update_location = 'http://www.senado.cl/wspublico/tramitacion.php?fecha='
+		@location = 'http://www.senado.cl/wspublico/tramitacion.php?boletin='
 		@bills_location = 'bills'
 	end
 
 	def doc_locations
-		[@location]
-	end
-
-	def parse doc
-		doc_arr = []
-		doc.split(/\n/).each do |pair|
-			key, val = pair.split(/\t/)
-			doc_arr.push(val)
-		end
-		doc_arr
+		doc = RestClient.get @update_location + @last_update
+		xml = Nokogiri::XML(doc)
+		projects = xml.xpath('//boletin').map {|x| x.text}
+		locations = projects.map {|x| @location + x.split('-')[0]}
 	end
 
 	def save formatted_info
