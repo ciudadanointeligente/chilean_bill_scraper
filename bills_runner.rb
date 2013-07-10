@@ -1,6 +1,6 @@
 # coding: utf-8
-require './bills_scrapable_classes'
+require './bill_info'
 
 if !(defined? Test::Unit::TestCase)
-	Bills.new.process
+	BillInfo.new.process
 end

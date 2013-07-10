@@ -1,75 +1,81 @@
 # coding: utf-8
+require './bill'
 require './scrapable_classes'
 require 'json'
 
-class Bills < StorageableInfo
+class BillInfo < StorageableInfo
 
 	def initialize()
 		super()
 		@model = 'bills'
 		@id = ''
+		@last_update = HTTParty.get('http://billit.ciudadanointeligente.org/bills/last_update').body
+		@update_location = 'http://www.senado.cl/wspublico/tramitacion.php?fecha='
 		@location = 'http://www.senado.cl/wspublico/tramitacion.php?boletin='
 		@bills_location = 'bills'
+		@format = 'application/json'
 	end
 
 	def doc_locations
-		bulletins = 8952.downto(1)
-		# bulletins = parse(read(@bills_location))
-		bulletins.map {|b| @location+b.to_s}
+		bulletins = 9023.downto(1)
+		bulletins.map {|b| @location + b.to_s}
 	end
 
-	def parse doc
-		doc_arr = []
-		doc.split(/\n/).each do |pair|
-			key, val = pair.split(/\t/)
-			doc_arr.push(val)
+	def save bill
+		result_code = HTTParty.get([@API_url, @model, @id].join("/"), headers: {"Accept"=>"*/*"}).code#{|response, request, result| result.code }
+		if result_code == 200
+			puts "-------- 200 ---------"
+			put bill
+		else
+			puts "-------- 404 ---------"
+			post bill
 		end
-		doc_arr
 	end
 
-	def save formatted_info
-		# puts @API_url + @model
-		# puts formatted_info
-		post formatted_info
+	def put bill
+	  bill.put([@API_url, @model, bill.uid].join("/"), @format)
+	end
+
+	def post bill
+	  bill.post([@API_url, @model].join("/"), @format)
 	end
 
 	def format info
+		bill = Bill.new
+
 		authors = info[:authors].map{|x| x.values}.flatten
 		matters = info[:matters].map{|x| x.values}.flatten
 		merged = info[:merged].split('/')
 
-		formatted_info = {bill:
-			{
-	    		:uid => info[:uid],
-	            :title => info[:title],
-				:creation_date => info[:creation_date],
-				:initiative => info[:initiative],
-				:origin_chamber => info[:origin_chamber],
-				:current_urgency => info[:current_urgency],
-				:stage => info[:stage],
-				:sub_stage => info[:sub_stage],
-				:state => info[:state],
-				:law => info[:law],
-				:publish_date => info[:publish_date],
-				:merged => merged,
-				:matters => matters,
-				:authors => authors,
-				#
-				:events => info[:events],
-				:urgencies => info[:urgencies],
-				:reports => info[:reports],
-				:modifications => info[:modifications],
-				:documents => info[:documents],
-				:instructions => info[:instructions],
-				:observations => info[:observations],
-				#not present
-	            :link_law => info[:link_law],
-	            :summary => info[:summary],
-				:tags => info[:tags]
-			}.to_json
-		}
+		bill.uid = info[:uid]
+		bill.title = info[:title]
+		bill.creation_date = info[:creation_date]
+		bill.initiative = info[:initiative]
+		bill.origin_chamber = info[:origin_chamber]
+		bill.current_urgency = info[:current_urgency]
+		bill.stage = info[:stage]
+		bill.sub_stage = info[:sub_stage]
+		bill.state = info[:state]
+		bill.law = info[:law]
+		bill.publish_date = info[:publish_date]
+		bill.merged = merged
+		bill.matters = matters
+		bill.authors = authors
+		#
+		bill.events = info[:events]
+		bill.urgencies = info[:urgencies]
+		bill.reports = info[:reports]
+		bill.modifications = info[:modifications]
+		bill.documents = info[:documents]
+		bill.instructions = info[:instructions]
+		bill.observations = info[:observations]
+		#not present
+	    bill.summary = info[:summary]
+	    bill.link_law = info[:link_law]
+		bill.tags = info[:tags]
+
 		@id = info[:uid]
-		formatted_info
+		bill
 	end
 
     def get_info doc
