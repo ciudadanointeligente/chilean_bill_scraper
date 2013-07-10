@@ -1,7 +1,8 @@
 # coding: utf-8
 require 'rubygems'
 require 'nokogiri'
-require 'rest-client'
+# require 'rest-client'
+require 'httparty'
 require 'pdf-reader'
 require 'open-uri'
 
@@ -15,11 +16,11 @@ module RestfulApiMethods
 	end
 
 	def put formatted_info
-		RestClient.put @API_url + @model + '/' + @id, formatted_info, {:content_type => :json}
+		HTTParty.put [@API_url, @model, @id].join("/"), formatted_info
 	end
 
 	def post formatted_info
-		RestClient.post [@API_url, @model].join("/"), formatted_info, :content_type => :json
+		HTTParty.post [@API_url, @model].join("/"), formatted_info
 	end
 end
 
@@ -27,8 +28,8 @@ class StorageableInfo
 	include RestfulApiMethods
 
 	def initialize(location = '')
-		@API_url = 'http://billit.ciudadanointeligente.org'
-		# @API_url = 'localhost:3000'
+		# @API_url = 'http://billit.ciudadanointeligente.org'
+		@API_url = 'http://localhost:3000'
 		@location = location
 	end
 
@@ -37,9 +38,13 @@ class StorageableInfo
 			begin
 				puts doc_location
 				doc = read doc_location
+				puts 'read'
 				info = get_info doc
+				puts 'got'
 				formatted_info = format info
+				puts 'formatted'
 				save formatted_info
+				puts 'saved'
 			rescue Exception=>e
 				puts e
 			end
