@@ -10,6 +10,7 @@ class BillInfo < StorageableInfo
 		@model = 'bills'
 		@id = ''
 		@last_update = HTTParty.get('http://billit.ciudadanointeligente.org/bills/last_update').body
+		# @last_update = "30/12/2013"
 		@update_location = 'http://www.senado.cl/wspublico/tramitacion.php?fecha='
 		@location = 'http://www.senado.cl/wspublico/tramitacion.php?boletin='
 		@bills_location = 'bills'
@@ -46,34 +47,34 @@ class BillInfo < StorageableInfo
 		bill = Bill.new
 
 		authors = info[:authors].map{|x| x.values}.flatten
-		matters = info[:matters].map{|x| x.values}.flatten
-		merged = info[:merged].split('/')
+		subject_areas = info[:subject_areas].map{|x| x.values}.flatten
+		merged_bills = info[:merged_bills].split('/')
 
 		bill.uid = info[:uid]
 		bill.title = info[:title]
 		bill.creation_date = info[:creation_date]
-		bill.initiative = info[:initiative]
-		bill.origin_chamber = info[:origin_chamber]
-		bill.current_urgency = info[:current_urgency]
+		bill.source = info[:source]
+		bill.initial_chamber = info[:initial_chamber]
+		bill.current_priority = info[:current_priority]
 		bill.stage = info[:stage]
 		bill.sub_stage = info[:sub_stage]
-		bill.state = info[:state]
-		bill.law = info[:law]
+		bill.status = info[:status]
+		bill.resulting_document = info[:resulting_document]
 		bill.publish_date = info[:publish_date]
-		bill.merged = merged
-		bill.matters = matters
+		bill.merged_bills = merged_bills
+		bill.subject_areas = subject_areas
 		bill.authors = authors
 		#
-		bill.events = info[:events]
-		bill.urgencies = info[:urgencies]
+		bill.paperworks = info[:paperworks]
+		bill.priorities = info[:priorities]
 		bill.reports = info[:reports]
-		bill.modifications = info[:modifications]
+		bill.revisions = info[:revisions]
 		bill.documents = info[:documents]
-		bill.instructions = info[:instructions]
-		bill.observations = info[:observations]
+		bill.directives = info[:directives]
+		bill.remarks = info[:remarks]
 		#not present
-	    bill.summary = info[:summary]
-	    bill.link_law = info[:link_law]
+	    bill.abstract = info[:abstract]
+	    bill.law_link = info[:law_link]
 		bill.tags = info[:tags]
 
 		@id = info[:uid]
@@ -87,15 +88,15 @@ class BillInfo < StorageableInfo
 		info[:uid] = xml.at_css('boletin').text() if xml.at_css('boletin')
 		info[:title] = xml.at_css('titulo').text() if xml.at_css('titulo')
 		info[:creation_date] = xml.at_css('fecha_ingreso').text() if xml.at_css('fecha_ingreso')
-		info[:initiative] = xml.at_css('iniciativa').text() if xml.at_css('iniciativa')
-		info[:origin_chamber] = xml.at_css('camara_origen').text() if xml.at_css('camara_origen')
-		info[:current_urgency] = xml.at_css('urgencia_actual').text() if xml.at_css('urgencia_actual')
+		info[:source] = xml.at_css('iniciativa').text() if xml.at_css('iniciativa')
+		info[:initial_chamber] = xml.at_css('camara_origen').text() if xml.at_css('camara_origen')
+		info[:current_priority] = xml.at_css('urgencia_actual').text() if xml.at_css('urgencia_actual')
 		info[:stage] = xml.at_css('etapa').text() if xml.at_css('etapa')
 		info[:sub_stage] = xml.at_css('subetapa').text() if xml.at_css('subetapa')
-		info[:law] = xml.at_css('leynro').text() if xml.at_css('leynro')
+		info[:resulting_document] = xml.at_css('leynro').text() if xml.at_css('leynro')
 		info[:publish_date] = xml.at_css('diariooficial').text() if xml.at_css('diariooficial')
-		info[:state] = xml.at_css('estado').text() if xml.at_css('estado')
-		info[:merged] = xml.at_css('refundidos').text() if xml.at_css('refundidos')
+		info[:status] = xml.at_css('estado').text() if xml.at_css('estado')
+		info[:merged_bills] = xml.at_css('refundidos').text() if xml.at_css('refundidos')
 		fields.keys.each do |field|
 			info[field] = get_field_data xml, field
 		end
@@ -129,16 +130,16 @@ class BillInfo < StorageableInfo
 	    			}
 	    		]
     		},
-    		matters: {
+    		subject_areas: {
     			xpath: '//materias/materia',
     			sub_fields: [
 	    			{
-	    				name: 'matter',
+	    				name: 'subject_area',
 	    				css: 'DESCRIPCION'
 	    			}
 	    		]
     		},
-    		events: {
+    		paperworks: {
     			xpath: '//tramitacion/tramite',
     			sub_fields: [
     				{
@@ -163,7 +164,7 @@ class BillInfo < StorageableInfo
 	    			}
     		 	]
     		},
-    		urgencies: {
+    		priorities: {
     			xpath: '//urgencias/urgencia',
     			sub_fields: [
 	    			{
@@ -213,11 +214,11 @@ class BillInfo < StorageableInfo
 	    			}
 	    		]
     		},
-    		modifications: {
+    		revisions: {
     			xpath: '//comparados/comparado',
     			sub_fields: [
     				{
-	    				name: 'modification',
+	    				name: 'revision',
 	    				css: 'COMPARADO'
 	    			}
 	    		]
@@ -251,7 +252,7 @@ class BillInfo < StorageableInfo
 	    			}
 	    		]
     		},
-    		instructions: {
+    		directives: {
     			xpath: '//indicaciones/indicacion',
     			sub_fields: [
 	    			{
@@ -268,7 +269,7 @@ class BillInfo < StorageableInfo
 	    			}
 	    		]
     		},
-    		observations: {
+    		remarks: {
     			xpath: '//observaciones/observacion',
     			sub_fields: [
 	    			{

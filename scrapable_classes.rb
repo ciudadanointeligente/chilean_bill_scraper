@@ -28,8 +28,8 @@ class StorageableInfo
 	include RestfulApiMethods
 
 	def initialize(location = '')
-		# @API_url = 'http://billit.ciudadanointeligente.org'
-		@API_url = 'http://localhost:3000'
+		@API_url = 'http://billit.ciudadanointeligente.org'
+		# @API_url = 'http://localhost:3000'
 		@location = location
 	end
 

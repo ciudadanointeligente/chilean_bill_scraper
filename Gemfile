@@ -13,5 +13,8 @@ source 'http://rubygems.org'
 
 gem 'rspec'
 gem 'roar'
-gem 'billit_representers'
+gem 'representable'
+gem 'billit_representers', '0.7.2'
 gem 'faraday'
+
+gem 'activemodel'
