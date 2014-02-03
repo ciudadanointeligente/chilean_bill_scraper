@@ -1,5 +1,5 @@
 # coding: utf-8
-require './bill'
+require 'billit_representers/models/bill'
 require './scrapable_classes'
 require 'json'
 
@@ -44,7 +44,7 @@ class BillInfo < StorageableInfo
 	end
 
 	def format info
-		bill = Bill.new
+		bill = Billit::Bill.new
 
 		authors = info[:authors].map{|x| x.values}.flatten
 		subject_areas = info[:subject_areas].map{|x| x.values}.flatten
@@ -61,6 +61,7 @@ class BillInfo < StorageableInfo
 		bill.status = info[:status]
 		bill.resulting_document = info[:resulting_document]
 		bill.publish_date = info[:publish_date]
+		bill.bill_draft_link = info[:bill_draft_link]
 		bill.merged_bills = merged_bills
 		bill.subject_areas = subject_areas
 		bill.authors = authors
@@ -97,48 +98,55 @@ class BillInfo < StorageableInfo
 		info[:publish_date] = xml.at_css('diariooficial').text() if xml.at_css('diariooficial')
 		info[:status] = xml.at_css('estado').text() if xml.at_css('estado')
 		info[:merged_bills] = xml.at_css('refundidos').text() if xml.at_css('refundidos')
-		fields.keys.each do |field|
-			info[field] = get_field_data xml, field
+		info[:bill_draft_link] = xml.at_css('link_mensaje_mocion').text() if xml.at_css('link_mensaje_mocion')
+		hash_fields.keys.each do |field|
+			info[field] = get_hash_field_data xml, field
+		end
+		model_fields.keys.each do |field|
+			info[field] = get_model_field_data xml, field
 		end
 		info
     end
 
-    def get_field_data nokogiri_xml, field
+    def get_hash_field_data nokogiri_xml, field
     	field = field.to_sym
     	field_vals = []
-    	path = nokogiri_xml.xpath(fields[field][:xpath])
-    	path.each do |field_instance|
+    	path = nokogiri_xml.xpath(hash_fields[field][:xpath])
+    	path.each do |field_info|
     		field_val = {}
-    		fields[field][:sub_fields].each do |sub_field|
+    		hash_fields[field][:sub_fields].each do |sub_field|
     			name = sub_field[:name]
     			css = sub_field[:css]
-    			field_val[name] = field_instance.at_css(css).text if field_instance.at_css(css)
+    			field_val[name] = field_info.at_css(css).text if field_info.at_css(css)
     		end
     		field_vals.push(field_val)
     	end if path
     	field_vals
     end
 
-    def fields
+    def get_model_field_data nokogiri_xml, field
+    	field_class = ("Billit::" + field.to_s.classify).constantize
+    	# field_class = field.to_s.classify.constantize
+    	field_instances = []
+    	path = nokogiri_xml.xpath(model_fields[field][:xpath])
+    	path.each do |field_info|
+    		field_instance = field_class.new
+    		model_fields[field][:sub_fields].each do |sub_field|
+    			name = sub_field[:name]
+    			css = sub_field[:css]
+    			field_instance.send name+'=', field_info.at_css(css).text if field_info.at_css(css)
+    			# field_instance[name] = field_info.at_css(css).text if field_info.at_css(css)
+    		end
+    		field_instances.push(field_instance)
+    		# field_class.send field+'=', field_val #ta super malo
+    	end if path
+    	field_instances
+    end
+
+    # Used for documents embedded within a bill,
+    # posted/put as hashes instead of having their own model and representer
+    def model_fields
     	{
-    		authors: {
-    			xpath: '//autores/autor',
-    			sub_fields: [
-    				{
-	    				name: 'author',
-	    				css: 'PARLAMENTARIO'
-	    			}
-	    		]
-    		},
-    		subject_areas: {
-    			xpath: '//materias/materia',
-    			sub_fields: [
-	    			{
-	    				name: 'subject_area',
-	    				css: 'DESCRIPCION'
-	    			}
-	    		]
-    		},
     		paperworks: {
     			xpath: '//tramitacion/tramite',
     			sub_fields: [
@@ -211,15 +219,10 @@ class BillInfo < StorageableInfo
 	    			{
 	    				name: 'stage',
 	    				css: 'ETAPA'
-	    			}
-	    		]
-    		},
-    		revisions: {
-    			xpath: '//comparados/comparado',
-    			sub_fields: [
-    				{
-	    				name: 'revision',
-	    				css: 'COMPARADO'
+	    			},
+	    			{
+	    				name: 'link',
+	    				css: 'LINK_INFORME'
 	    			}
 	    		]
     		},
@@ -249,6 +252,10 @@ class BillInfo < StorageableInfo
 	    			{
 	    				name: 'chamber',
 	    				css: 'CAMARA'
+	    			},
+	    			{
+	    				name: 'link',
+	    				css: 'LINK_OFICIO'
 	    			}
 	    		]
     		},
@@ -266,6 +273,10 @@ class BillInfo < StorageableInfo
 	    			{
 	    				name: 'stage',
 	    				css: 'ETAPA'
+	    			},
+	    			{
+	    				name: 'link',
+	    				css: 'LINK_INDICACION'
 	    			}
 	    		]
     		},
@@ -283,6 +294,44 @@ class BillInfo < StorageableInfo
 	    			{
 	    				name: 'stage',
 	    				css: 'ETAPA'
+	    			}
+	    		]
+    		},
+    		revisions: {
+    			xpath: '//comparados/comparado',
+    			sub_fields: [
+    				{
+	    				name: 'description',
+	    				css: 'COMPARADO'
+	    			},
+	    			{
+	    				name: 'link',
+	    				css: 'LINK_COMPARADO'
+	    			}
+	    		]
+    		}
+    	}
+    end
+
+    # Used for documents embedded within a bill,
+    # stored as hashes instead of having their own model and representer
+    def hash_fields
+    	{
+    		authors: {
+    			xpath: '//autores/autor',
+    			sub_fields: [
+    				{
+	    				name: 'author',
+	    				css: 'PARLAMENTARIO'
+	    			}
+	    		]
+    		},
+    		subject_areas: {
+    			xpath: '//materias/materia',
+    			sub_fields: [
+	    			{
+	    				name: 'subject_area',
+	    				css: 'DESCRIPCION'
 	    			}
 	    		]
     		}
