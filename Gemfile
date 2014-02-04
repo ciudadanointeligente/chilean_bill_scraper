@@ -12,7 +12,7 @@ source 'http://rubygems.org'
  gem 'json'
 
 gem 'rspec'
-gem 'billit_representers', '0.8.0'
+gem 'billit_representers', '0.8.2'
 gem 'faraday'
 
 gem 'activemodel'
