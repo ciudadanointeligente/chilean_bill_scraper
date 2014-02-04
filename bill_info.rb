@@ -18,10 +18,8 @@ class BillInfo < StorageableInfo
 	end
 
 	def doc_locations
-		doc = HTTParty.get(@update_location + @last_update).body
-		xml = Nokogiri::XML(doc)
-		projects = xml.xpath('//boletin').map {|x| x.text}
-		locations = projects.map {|x| @location + x.split('-')[0]}
+		bulletins = 9254.downto(1)
+		bulletins.map {|b| @location + b.to_s}
 	end
 
 	def save bill
