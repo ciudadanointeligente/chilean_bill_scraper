@@ -1,5 +1,6 @@
 # coding: utf-8
 require 'billit_representers/models/bill'
+require 'billit_representers/models/count'
 require './scrapable_classes'
 require 'json'
 
@@ -72,7 +73,40 @@ class BillInfo < StorageableInfo
 		bill.revisions = info[:revisions]
 		bill.documents = info[:documents]
 		bill.directives = info[:directives]
-		bill.remarks = info[:remarks]
+    bill.remarks = info[:remarks]
+
+    motions = []
+		info[:motions].each do |motion_hash|
+      motion = BillitMotion.new
+      motion.date = motion_hash["date"]
+      motion.text = motion_hash["text"]
+      motion.requirement = motion_hash["requirement"]
+      motion.vote_events = []
+
+      vote_event = BillitVoteEvent.new
+
+      #Counts
+      vote_event.counts = []
+      ["yes", "no", "abstain", "paired"].each do |option|
+        count = BillitCount.new
+        count.option = option
+        count.value = motion_hash[option]
+        vote_event.counts << count
+      end
+
+      #Votes
+      # vote_event.votes = []
+      # motion_hash["votes"].each do |vote_hash|
+      #   vote = BillitVote.new
+      #   vote.voter_id = vote_hash["voter_id"]
+      #   vote.option = vote_hash["option"]
+      #   vote_event.votes << vote
+      # end
+
+      motion.vote_events << vote_event
+      motions << motion
+    end
+    bill.motions = motions
 
 		@id = info[:uid]
 		bill
@@ -120,6 +154,26 @@ class BillInfo < StorageableInfo
   end
 
   def get_model_field_data nokogiri_xml, field
+    "getting model " + field.to_s
+    field_class = ("Billit" + field.to_s.classify).constantize
+    # field_class = field.to_s.classify.constantize
+    field_instances = []
+    path = nokogiri_xml.xpath(model_fields[field][:xpath])
+    path.each do |field_info|
+      field_instance = field_class.new
+      model_fields[field][:sub_fields].each do |sub_field|
+        name = sub_field[:name]
+        css = sub_field[:css]
+        field_instance.send name+'=', field_info.at_css(css).text if field_info.at_css(css)
+        # field_instance[name] = field_info.at_css(css).text if field_info.at_css(css)
+      end
+      field_instances.push(field_instance)
+      # field_class.send field+'=', field_val #ta super malo
+    end if path
+    field_instances
+  end
+
+  def get_field_data nokogiri_xml, field
     "getting model " + field.to_s
   	field_class = ("Billit" + field.to_s.classify).constantize
   	# field_class = field.to_s.classify.constantize
@@ -330,7 +384,48 @@ class BillInfo < StorageableInfo
     				css: 'DESCRIPCION'
     			}
     		]
-  		}
+  		},
+      motions: {
+        xpath: '//votaciones/votacion',
+        sub_fields: [
+          {
+            name: 'session',
+            css: 'SESION'
+          },
+          {
+            name: 'date',
+            css: 'FECHA'
+          },
+          {
+            name: 'text',
+            css: 'TEMA'
+          },
+          {
+            name: 'yes',
+            css: 'SI'
+          },
+          {
+            name: 'no',
+            css: 'NO'
+          },
+          {
+            name: 'abstain',
+            css: 'ABSTENCION'
+          },
+          {
+            name: 'paired',
+            css: 'PAREO'
+          },
+          {
+            name: 'requirement',
+            css: 'QUORUM'
+          }#,
+          # {
+          #   name: 'votes',
+          #   css: 'DETALLE_VOTACION'
+          # }
+        ]
+      }
   	}
   end
 end
