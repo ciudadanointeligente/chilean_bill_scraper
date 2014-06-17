@@ -48,7 +48,6 @@ class StorageableInfo
 				puts 'saved'
 			rescue Exception=>e
         f.puts doc_location
-        f.puts e
         puts e
 			end
 		end
