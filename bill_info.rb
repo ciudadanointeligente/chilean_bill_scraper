@@ -19,7 +19,7 @@ class BillInfo < StorageableInfo
 	end
 
 	def doc_locations
-		bulletins = 9254.downto(1)
+		bulletins = 9399.downto(1)
 		bulletins.map {|b| @location + b.to_s}
 	end
 
