@@ -21,3 +21,5 @@ vendor
 # Gemfile
 # Python compiled files
 *.pyc
+
+scraping_errors.txt
