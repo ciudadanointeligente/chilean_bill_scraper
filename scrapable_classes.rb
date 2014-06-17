@@ -34,6 +34,7 @@ class StorageableInfo
 	end
 
 	def process
+    f = File.open('scraping_errors.txt', 'a')
 		doc_locations.each do |doc_location|
 			begin
 				puts doc_location
@@ -46,7 +47,9 @@ class StorageableInfo
 				save formatted_info
 				puts 'saved'
 			rescue Exception=>e
-				puts e
+        f.puts doc_location
+        f.puts e
+        puts e
 			end
 		end
 	end
