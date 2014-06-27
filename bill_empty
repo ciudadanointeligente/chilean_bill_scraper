@@ -1,0 +1,29 @@
+<proyectos>
+    <proyecto>
+        <descripcion>
+            <boletin>8292-13</boletin>
+            <titulo></titulo>
+            <fecha_ingreso></fecha_ingreso>
+            <iniciativa></iniciativa>
+            <camara_origen></camara_origen>
+            <urgencia_actual></urgencia_actual>
+            <etapa></etapa>
+            <subetapa></subetapa>
+            <leynro></leynro>
+            <diariooficial></diariooficial>
+            <estado></estado>
+            <refundidos></refundidos>
+            <link_mensaje_mocion></link_mensaje_mocion>
+        </descripcion>
+        <autores></autores>
+        <tramitacion></tramitacion>
+        <votaciones></votaciones>
+        <urgencias></urgencias>
+        <informes></informes>
+        <comparados></comparados>
+        <oficios></oficios>
+        <indicaciones></indicaciones>
+        <observaciones></observaciones>
+        <materias></materias>
+    </proyecto>
+</proyectos>

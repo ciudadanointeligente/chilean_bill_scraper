@@ -63,59 +63,55 @@ describe BillInfo do
     # bill_info.save formatted_info
   end
   context "with one element information" do
-    xit "formats hashes info" do
+    it "formats hashes info" do
       bill_info = BillInfo.new
       bill_info.stub(:doc_locations){["./bill_little"]}
       doc = bill_info.read bill_info.doc_locations.first
       info = bill_info.get_info doc
       formatted_info = bill_info.format info
       expect(formatted_info.authors).to be_an Array
-      expect(formatted_info.authors.count).to eq(2)
+      expect(formatted_info.authors.count).to eq(1)
       expect(formatted_info.subject_areas).to be_an Array
-      expect(formatted_info.subject_areas.count).to eq(2)
+      expect(formatted_info.subject_areas.count).to eq(1)
       expect(formatted_info.merged_bills).to be_an Array
-      expect(formatted_info.merged_bills.count).to eq(2)
+      expect(formatted_info.merged_bills.count).to eq(1)
     end
-    xit "formats voting info" do
+    it "formats voting info" do
       bill_info = BillInfo.new
       bill_info.stub(:doc_locations){["./bill_little"]}
       doc = bill_info.read bill_info.doc_locations.first
       info = bill_info.get_info doc
       formatted_info = bill_info.format info
       expect(formatted_info.motions).to be_an Array
-      expect(formatted_info.motions.count).to eq(2)
+      expect(formatted_info.motions.count).to eq(1)
       expect(formatted_info.motions.first.vote_events.first.counts.first).to be_an BillitCount
       expect(formatted_info.motions.first.vote_events.first.counts.count).to eq(4)
       expect(formatted_info.motions.first.vote_events.first.votes.first).to be_a BillitVote
-      expect(formatted_info.motions.first.vote_events.first.votes.count).to eq(2)
+      expect(formatted_info.motions.first.vote_events.first.votes.count).to eq(1)
     end
   end
   context "with empty information" do
-    xit "formats hashes info" do
+    it "formats hashes info" do
       bill_info = BillInfo.new
       bill_info.stub(:doc_locations){["./bill_empty"]}
       doc = bill_info.read bill_info.doc_locations.first
       info = bill_info.get_info doc
       formatted_info = bill_info.format info
       expect(formatted_info.authors).to be_an Array
-      expect(formatted_info.authors.count).to eq(2)
+      expect(formatted_info.authors.count).to eq(0)
       expect(formatted_info.subject_areas).to be_an Array
-      expect(formatted_info.subject_areas.count).to eq(2)
+      expect(formatted_info.subject_areas.count).to eq(0)
       expect(formatted_info.merged_bills).to be_an Array
-      expect(formatted_info.merged_bills.count).to eq(2)
+      expect(formatted_info.merged_bills.count).to eq(0)
     end
-    xit "formats voting info" do
+    it "formats voting info" do
       bill_info = BillInfo.new
       bill_info.stub(:doc_locations){["./bill_empty"]}
       doc = bill_info.read bill_info.doc_locations.first
       info = bill_info.get_info doc
       formatted_info = bill_info.format info
       expect(formatted_info.motions).to be_an Array
-      expect(formatted_info.motions.count).to eq(2)
-      expect(formatted_info.motions.first.vote_events.first.counts.first).to be_an BillitCount
-      expect(formatted_info.motions.first.vote_events.first.counts.count).to eq(4)
-      expect(formatted_info.motions.first.vote_events.first.votes.first).to be_a BillitVote
-      expect(formatted_info.motions.first.vote_events.first.votes.count).to eq(2)
+      expect(formatted_info.motions.count).to eq(0)
     end
   end
 end

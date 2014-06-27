@@ -101,44 +101,46 @@ class BillInfo < StorageableInfo
 		model_fields.keys.each do |field|
 			info[field] = get_model_field_data xml, field
 		end
-    get_voting_data xml, info #if...
+    get_voting_data xml, info
 		info
   end
 
   def get_voting_data nokogiri_xml, info
     require 'active_support/core_ext/hash/conversions'
     hash = Hash.from_xml(nokogiri_xml.to_s)
-    motions_hash = hash['proyectos']['proyecto']['votaciones']['votacion']
-    
+    if hash['proyectos']['proyecto']['votaciones'].blank?
+      info[:motions] = []
+      return
+    end
+
     motions = []
-    motions_hash.each do |motion_hash|
+    motions_data = hash['proyectos']['proyecto']['votaciones']['votacion']
+    motions_data = [motions_data] if motions_data.class == Hash
+    motions_data.each do |motion_data|
       motion = BillitMotion.new
-      motion.date = motion_hash["FECHA"]
-      motion.text = motion_hash["TEMA"]
-      motion.requirement = motion_hash["QUORUM"]
+      motion.date = motion_data["FECHA"]
+      motion.text = motion_data["TEMA"]
+      motion.requirement = motion_data["QUORUM"]
       motion.vote_events = []
-
       vote_event = BillitVoteEvent.new
-
       #Counts
       vote_event.counts = []
       ["SI", "NO", "ABSTENCION", "PAREO"].each do |option|
         count = BillitCount.new
         count.option = option
-        count.value = motion_hash[option]
+        count.value = motion_data[option]
         vote_event.counts << count
       end
-
       #Votes
       vote_event.votes = []
-      votes_hash = motion_hash["DETALLE_VOTACION"]["VOTO"]
+      votes_hash = motion_data["DETALLE_VOTACION"]["VOTO"]
+      votes_hash = [votes_hash] if votes_hash.class == Hash
       votes_hash.each do |vote_hash|
         vote = BillitVote.new
         vote.voter_id = vote_hash["PARLAMENTARIO"]
         vote.option = vote_hash["SELECCION"]
         vote_event.votes << vote
       end
-
       motion.vote_events << vote_event
       motions << motion
     end
