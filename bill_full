@@ -1,0 +1,161 @@
+<proyectos>
+    <proyecto>
+        <descripcion>
+            <boletin>8292-13</boletin>
+            <titulo>Modifica la jornada, descanso y composición de la remuneración  de los trabajadores en casa particular.</titulo>
+            <fecha_ingreso>08/05/2012</fecha_ingreso>
+            <iniciativa>Mensaje</iniciativa>
+            <camara_origen>C.Diputados</camara_origen>
+            <urgencia_actual>Sin urgencia</urgencia_actual>
+            <etapa>Segundo trámite constitucional (Senado)</etapa>
+            <subetapa>Discusión general </subetapa>
+            <leynro></leynro>
+            <diariooficial></diariooficial>
+            <estado>En tramitación </estado>
+            <refundidos>7807-13 / 7675-13 </refundidos>
+            <link_mensaje_mocion>http://www.senado.cl/appsenado/index.php?mo=tramitacion&amp;ac=getDocto&amp;iddocto=8685&amp;tipodoc=mensaje_mocion</link_mensaje_mocion>
+        </descripcion>
+        <autores>
+            <autor>
+                <PARLAMENTARIO>Becker Alvear, Germán</PARLAMENTARIO>
+            </autor>
+            <autor>
+                <PARLAMENTARIO>Browne Urrejola, Pedro</PARLAMENTARIO>
+            </autor>
+        </autores>
+        <tramitacion>
+            <tramite>
+                <SESION>/</SESION>
+                <FECHA>08/05/2012</FECHA>
+                <DESCRIPCIONTRAMITE>Ingreso de proyecto .  </DESCRIPCIONTRAMITE>
+                <ETAPDESCRIPCION>Primer trámite constitucional</ETAPDESCRIPCION>
+                <CAMARATRAMITE>C.Diputados</CAMARATRAMITE>
+            </tramite>
+            <tramite>
+                <SESION>22/360</SESION>
+                <FECHA>08/05/2012</FECHA>
+                <DESCRIPCIONTRAMITE>Cuenta de proyecto . Pasa a Comisión de Trabajo y Seguridad Social</DESCRIPCIONTRAMITE>
+                <ETAPDESCRIPCION>Primer trámite constitucional</ETAPDESCRIPCION>
+                <CAMARATRAMITE>C.Diputados</CAMARATRAMITE>
+            </tramite>
+        </tramitacion>
+        <votaciones>
+            <votacion>
+                <SESION>73/360</SESION>
+                <FECHA>23/11/2012</FECHA>
+                <TEMA>Rechazo letra a) Indicación N°62  , Partida 10 Ministerio de Justicia (Boletín N°8.575-05) Proyecto de Ley de Presupuestos.</TEMA>
+                <SI>10</SI>
+                <NO>13</NO>
+                <ABSTENCION>1</ABSTENCION>
+                <PAREO>2</PAREO>
+                <QUORUM>Mayoría simple</QUORUM>
+                <TIPOVOTACION>Discusión única</TIPOVOTACION>
+                <ETAPA>Segundo trámite constitucional</ETAPA>
+                <DETALLE_VOTACION>
+                    <VOTO>
+                        <PARLAMENTARIO>Tuma Z., Eugenio</PARLAMENTARIO>
+                        <SELECCION>No</SELECCION>
+                    </VOTO>
+                    <VOTO>
+                        <PARLAMENTARIO>Chahuán C., Francisco</PARLAMENTARIO>
+                        <SELECCION>Abstencion</SELECCION>
+                    </VOTO>
+                </DETALLE_VOTACION>
+            </votacion>
+            <votacion>
+                <SESION>73/360</SESION>
+                <FECHA>23/11/2012</FECHA>
+                <TEMA>Votación Indicación N° 48 , Partida 17 Ministerio de Minería (Boletín N°8.575-05) Proyecto de Ley de Presupuestos. Se repite por influir abstención en resultado, art. 178 del Reglamento.</TEMA>
+                <SI>10</SI>
+                <NO>7</NO>
+                <ABSTENCION>3</ABSTENCION>
+                <PAREO>2</PAREO>
+                <QUORUM>Mayoría simple</QUORUM>
+                <TIPOVOTACION>Discusión única</TIPOVOTACION>
+                <ETAPA>Segundo trámite constitucional</ETAPA>
+                <DETALLE_VOTACION>
+                    <VOTO>
+                        <PARLAMENTARIO>Muñoz A., Pedro</PARLAMENTARIO>
+                        <SELECCION>Pareo</SELECCION>
+                    </VOTO>
+                    <VOTO>
+                        <PARLAMENTARIO>Prokurica P., Baldo</PARLAMENTARIO>
+                        <SELECCION>Pareo</SELECCION>
+                    </VOTO>
+                </DETALLE_VOTACION>
+            </votacion>
+        </votaciones>
+        <urgencias>
+            <urgencia>
+                <TIPO>Simple</TIPO>
+                <FECHAINGRESO>19/06/2012</FECHAINGRESO>
+                <MENSAJEINGRESO>155-360</MENSAJEINGRESO>
+                <CAMARAINGRESO>C. Diputados</CAMARAINGRESO>
+                <FECHARETIRO>19/07/2012</FECHARETIRO>
+                <MENSAJERETIRO>CADUCADA</MENSAJERETIRO>
+            </urgencia>
+            <urgencia>
+                <TIPO>Simple</TIPO>
+                <FECHAINGRESO>19/07/2012</FECHAINGRESO>
+                <MENSAJEINGRESO>206-360</MENSAJEINGRESO>
+                <CAMARAINGRESO>C. Diputados</CAMARAINGRESO>
+                <FECHARETIRO>28/08/2012</FECHARETIRO>
+                <MENSAJERETIRO>CADUCADA</MENSAJERETIRO>
+            </urgencia>
+        </urgencias>
+        <informes>
+            <informe>
+                <FECHAINFORME>28/08/2012</FECHAINFORME>
+                <TRAMITE>Primer informe de comisión de Trabajo y Seguridad Social </TRAMITE>
+                <ETAPA>Primer trámite constitucional</ETAPA>
+                <LINK_INFORME>http://www.senado.cl/appsenado/index.php?mo=tramitacion&amp;ac=getDocto&amp;iddocto=15316&amp;tipodoc=info</LINK_INFORME>
+            </informe>
+            <informe>
+                <FECHAINFORME>17/07/2013</FECHAINFORME>
+                <TRAMITE>Primer informe de comisión de Trabajo y Previsión Social </TRAMITE>
+                <ETAPA>Segundo trámite constitucional</ETAPA>
+                <LINK_INFORME>http://www.senado.cl/appsenado/index.php?mo=tramitacion&amp;ac=getDocto&amp;iddocto=16129&amp;tipodoc=info</LINK_INFORME>
+            </informe>
+        </informes>
+        <comparados>
+            <comparado>
+                <COMPARADO>Comparado Segundo trámite constitucional(Primer informe de comisión) Comision de Trabajo y Previsión Social. </COMPARADO>
+                <LINK_COMPARADO>http://www.senado.cl/appsenado/index.php?mo=tramitacion&amp;ac=getDocto&amp;iddocto=1271&amp;tipodoc=compa</LINK_COMPARADO>
+            </comparado>
+            <comparado>
+                <COMPARADO>Comparado Segundo trámite constitucional(Primer informe de comisión) Comision de Trabajo y Previsión Social. </COMPARADO>
+                <LINK_COMPARADO>http://www.senado.cl/appsenado/index.php?mo=tramitacion&amp;ac=getDocto&amp;iddocto=1271&amp;tipodoc=compa</LINK_COMPARADO>
+            </comparado>
+        </comparados>
+        <oficios>
+            <oficio>
+                <NUMERO>10381</NUMERO>
+                <FECHA>13/09/2012</FECHA>
+                <TRAMITE>Oficio de ley a Cámara Revisora</TRAMITE>
+                <ETAPA>Primer trámite constitucional</ETAPA>
+                <TIPO>Ley</TIPO>
+                <CAMARA>C. Diputados</CAMARA>
+                <LINK_OFICIO>http://www.senado.cl/appsenado/index.php?mo=tramitacion&amp;ac=getDocto&amp;iddocto=17537&amp;tipodoc=ofic</LINK_OFICIO>
+            </oficio>
+            <oficio>
+                <NUMERO>10381</NUMERO>
+                <FECHA>13/09/2012</FECHA>
+                <TRAMITE>Oficio de ley a Cámara Revisora</TRAMITE>
+                <ETAPA>Primer trámite constitucional</ETAPA>
+                <TIPO>Ley</TIPO>
+                <CAMARA>C. Diputados</CAMARA>
+                <LINK_OFICIO>http://www.senado.cl/appsenado/index.php?mo=tramitacion&amp;ac=getDocto&amp;iddocto=17537&amp;tipodoc=ofic</LINK_OFICIO>
+            </oficio>
+        </oficios>
+        <indicaciones></indicaciones>
+        <observaciones></observaciones>
+        <materias>
+            <materia>
+                <DESCRIPCION>CASA PARTICULAR</DESCRIPCION>
+            </materia>
+            <materia>
+                <DESCRIPCION>CÓDIGO DEL TRABAJO</DESCRIPCION>
+            </materia>
+        </materias>
+    </proyecto>
+</proyectos>

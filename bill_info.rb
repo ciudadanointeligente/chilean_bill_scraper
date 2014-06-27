@@ -1,6 +1,6 @@
 # coding: utf-8
 require 'billit_representers/models/bill'
-require 'billit_representers/models/count'
+# require 'billit_representers/models/count'
 require './scrapable_classes'
 require 'json'
 
@@ -45,74 +45,43 @@ class BillInfo < StorageableInfo
 	def format info
 		bill = Billit::Bill.new
 
-		authors = info[:authors].map{|x| x.values}.flatten if info[:authors]
-		subject_areas = info[:subject_areas].map{|x| x.values}.flatten if info[:subject_areas]
-		merged_bills = info[:merged_bills].split('/') if info[:merged_bills]
+    authors = info[:authors].map{|x| x.values}.flatten if info[:authors]
+    subject_areas = info[:subject_areas].map{|x| x.values}.flatten if info[:subject_areas]
+    merged_bills = info[:merged_bills].split('/') if info[:merged_bills]
 
-		bill.uid = info[:uid]
-		bill.title = info[:title]
-		bill.creation_date = info[:creation_date]
-		bill.source = info[:source]
-		bill.initial_chamber = info[:initial_chamber]
-		bill.current_priority = info[:current_priority]
-		bill.stage = info[:stage]
-		bill.sub_stage = info[:sub_stage]
-		bill.status = info[:status]
-		bill.resulting_document = info[:resulting_document]
-		bill.publish_date = info[:publish_date]
-		bill.bill_draft_link = info[:bill_draft_link]
-		bill.merged_bills = merged_bills
-		bill.subject_areas = subject_areas
-		bill.authors = authors
-		#
-		bill.paperworks = info[:paperworks]
-		bill.priorities = info[:priorities]
-		bill.reports = info[:reports]
-		bill.revisions = info[:revisions]
-		bill.documents = info[:documents]
-		bill.directives = info[:directives]
+    bill.uid = info[:uid]
+    bill.title = info[:title]
+    bill.creation_date = info[:creation_date]
+    bill.source = info[:source]
+    bill.initial_chamber = info[:initial_chamber]
+    bill.current_priority = info[:current_priority]
+    bill.stage = info[:stage]
+    bill.sub_stage = info[:sub_stage]
+    bill.status = info[:status]
+    bill.resulting_document = info[:resulting_document]
+    bill.publish_date = info[:publish_date]
+    bill.bill_draft_link = info[:bill_draft_link]
+    bill.merged_bills = merged_bills
+    bill.subject_areas = subject_areas
+    bill.authors = authors
+    #
+    bill.paperworks = info[:paperworks]
+    bill.priorities = info[:priorities]
+    bill.reports = info[:reports]
+    bill.revisions = info[:revisions]
+    bill.documents = info[:documents]
+    bill.directives = info[:directives]
     bill.remarks = info[:remarks]
 
-    motions = []
-		info[:motions].each do |motion_hash|
-      motion = BillitMotion.new
-      motion.date = motion_hash["date"]
-      motion.text = motion_hash["text"]
-      motion.requirement = motion_hash["requirement"]
-      motion.vote_events = []
+    bill.motions = info[:motions]
 
-      vote_event = BillitVoteEvent.new
-
-      #Counts
-      vote_event.counts = []
-      ["yes", "no", "abstain", "paired"].each do |option|
-        count = BillitCount.new
-        count.option = option
-        count.value = motion_hash[option]
-        vote_event.counts << count
-      end
-
-      #Votes
-      # vote_event.votes = []
-      # motion_hash["votes"].each do |vote_hash|
-      #   vote = BillitVote.new
-      #   vote.voter_id = vote_hash["voter_id"]
-      #   vote.option = vote_hash["option"]
-      #   vote_event.votes << vote
-      # end
-
-      motion.vote_events << vote_event
-      motions << motion
-    end
-    bill.motions = motions
-
-		@id = info[:uid]
-		bill
-	end
+    @id = info[:uid]
+    bill
+  end
 
   def get_info doc
-		info = Hash.new
-		xml = Nokogiri::XML(doc)
+    info = Hash.new
+    xml = Nokogiri::XML(doc)
 		info[:uid] = xml.at_css('boletin').text() if xml.at_css('boletin')
 		info[:title] = xml.at_css('titulo').text() if xml.at_css('titulo')
 		info[:creation_date] = xml.at_css('fecha_ingreso').text() if xml.at_css('fecha_ingreso')
@@ -132,23 +101,64 @@ class BillInfo < StorageableInfo
 		model_fields.keys.each do |field|
 			info[field] = get_model_field_data xml, field
 		end
+    get_voting_data xml, info #if...
 		info
   end
 
+  def get_voting_data nokogiri_xml, info
+    require 'active_support/core_ext/hash/conversions'
+    hash = Hash.from_xml(nokogiri_xml.to_s)
+    motions_hash = hash['proyectos']['proyecto']['votaciones']['votacion']
+    
+    motions = []
+    motions_hash.each do |motion_hash|
+      motion = BillitMotion.new
+      motion.date = motion_hash["FECHA"]
+      motion.text = motion_hash["TEMA"]
+      motion.requirement = motion_hash["QUORUM"]
+      motion.vote_events = []
+
+      vote_event = BillitVoteEvent.new
+
+      #Counts
+      vote_event.counts = []
+      ["SI", "NO", "ABSTENCION", "PAREO"].each do |option|
+        count = BillitCount.new
+        count.option = option
+        count.value = motion_hash[option]
+        vote_event.counts << count
+      end
+
+      #Votes
+      vote_event.votes = []
+      votes_hash = motion_hash["DETALLE_VOTACION"]["VOTO"]
+      votes_hash.each do |vote_hash|
+        vote = BillitVote.new
+        vote.voter_id = vote_hash["PARLAMENTARIO"]
+        vote.option = vote_hash["SELECCION"]
+        vote_event.votes << vote
+      end
+
+      motion.vote_events << vote_event
+      motions << motion
+    end
+    info[:motions] = motions
+  end
+
   def get_hash_field_data nokogiri_xml, field
-  	field = field.to_sym
-  	field_vals = []
-  	path = nokogiri_xml.xpath(hash_fields[field][:xpath])
-  	path.each do |field_info|
-  		field_val = {}
-  		hash_fields[field][:sub_fields].each do |sub_field|
-  			name = sub_field[:name]
-  			css = sub_field[:css]
-  			field_val[name] = field_info.at_css(css).text if field_info.at_css(css)
-  		end
-  		field_vals.push(field_val)
-  	end if path
-  	field_vals
+    field = field.to_sym
+    field_vals = []
+    path = nokogiri_xml.xpath(hash_fields[field][:xpath])
+    path.each do |field_info|
+      field_val = {}
+      hash_fields[field][:sub_fields].each do |sub_field|
+        name = sub_field[:name]
+        css = sub_field[:css]
+        field_val[name] = field_info.at_css(css).text if field_info.at_css(css)
+      end
+      field_vals.push(field_val)
+    end if path
+    field_vals
   end
 
   def get_model_field_data nokogiri_xml, field
@@ -361,28 +371,26 @@ class BillInfo < StorageableInfo
   	}
   end
 
-  # Used for documents embedded within a bill,
-  # stored as hashes instead of having their own model and representer
   def hash_fields
-  	{
-  		authors: {
-  			xpath: '//autores/autor',
-  			sub_fields: [
-  				{
-    				name: 'author',
-    				css: 'PARLAMENTARIO'
-    			}
-    		]
-  		},
-  		subject_areas: {
-  			xpath: '//materias/materia',
-  			sub_fields: [
-    			{
-    				name: 'subject_area',
-    				css: 'DESCRIPCION'
-    			}
-    		]
-  		},
+    {
+      authors: {
+        xpath: '//autores/autor',
+        sub_fields: [
+          {
+            name: 'author',
+            css: 'PARLAMENTARIO'
+          }
+        ]
+      },
+      subject_areas: {
+        xpath: '//materias/materia',
+        sub_fields: [
+          {
+            name: 'subject_area',
+            css: 'DESCRIPCION'
+          }
+        ]
+      },
       motions: {
         xpath: '//votaciones/votacion',
         sub_fields: [
@@ -424,6 +432,6 @@ class BillInfo < StorageableInfo
           # }
         ]
       }
-  	}
+    }
   end
 end
