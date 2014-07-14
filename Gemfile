@@ -12,9 +12,10 @@ source 'http://rubygems.org'
  gem 'json'
 
 gem 'rspec'
-gem 'billit_representers', '0.9.7'
+gem 'billit_representers', '0.9.10'
 gem 'faraday'
 
 gem 'activemodel'
 
 gem 'what_methods'
+gem 'byebug'

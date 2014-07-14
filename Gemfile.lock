@@ -19,11 +19,16 @@ GEM
       tzinfo (~> 0.3.37)
     afm (0.2.0)
     atomic (1.1.14)
-    billit_representers (0.9.7)
+    billit_representers (0.9.10)
       activemodel
       roar (= 0.11.19)
       roar-rails (= 0.1.0)
     builder (3.1.4)
+    byebug (3.1.2)
+      columnize (~> 0.8)
+      debugger-linecache (~> 1.2)
+    columnize (0.8.9)
+    debugger-linecache (1.2.0)
     diff-lcs (1.2.5)
     erubis (2.7.0)
     faraday (0.9.0)
@@ -89,7 +94,7 @@ GEM
       atomic
     ttfunk (1.1.0)
     tzinfo (0.3.38)
-    uber (0.0.6)
+    uber (0.0.7)
     what_methods (1.0.1)
 
 PLATFORMS
@@ -98,7 +103,8 @@ PLATFORMS
 DEPENDENCIES
   activemodel
   activesupport
-  billit_representers (= 0.9.7)
+  billit_representers (= 0.9.10)
+  byebug
   faraday
   httparty
   json

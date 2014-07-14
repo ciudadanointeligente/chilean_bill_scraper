@@ -19,8 +19,9 @@ class BillInfo < StorageableInfo
 	end
 
 	def doc_locations
-		bulletins = 9407.downto(1)
-		bulletins.map {|b| @location + b.to_s}
+		# bulletins = 9407.downto(1)
+		# bulletins.map {|b| @location + b.to_s}
+    [@location + '6989', @location + '6927']
 	end
 
 	def save bill
@@ -134,13 +135,15 @@ class BillInfo < StorageableInfo
       end
       #Votes
       vote_event.votes = []
-      votes_hash = motion_data["DETALLE_VOTACION"]["VOTO"]
-      votes_hash = [votes_hash] if votes_hash.class == Hash
-      votes_hash.each do |vote_hash|
-        vote = BillitVote.new
-        vote.voter_id = vote_hash["PARLAMENTARIO"]
-        vote.option = vote_hash["SELECCION"]
-        vote_event.votes << vote
+      if motion_data["DETALLE_VOTACION"] and motion_data["DETALLE_VOTACION"]["VOTO"]
+        votes_hash = motion_data["DETALLE_VOTACION"]["VOTO"]
+        votes_hash = [votes_hash] if votes_hash.class == Hash
+        votes_hash.each do |vote_hash|
+          vote = BillitVote.new
+          vote.voter_id = vote_hash["PARLAMENTARIO"]
+          vote.option = vote_hash["SELECCION"]
+          vote_event.votes << vote
+        end
       end
       motion.vote_events << vote_event
       motions << motion
