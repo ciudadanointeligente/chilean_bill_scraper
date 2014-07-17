@@ -1,10 +1,10 @@
 # coding: utf-8
 require 'billit_representers/models/bill'
 # require 'billit_representers/models/count'
-require './scrapable_classes'
+require './scraper_framework'
 require 'json'
 
-class BillInfo < StorageableInfo
+class BillScraper < StorageableInfo
 
 	def initialize()
 		super()
@@ -16,13 +16,16 @@ class BillInfo < StorageableInfo
 		@location = 'http://www.senado.cl/wspublico/tramitacion.php?boletin='
 		@bills_location = 'bills'
 		@format = 'application/json'
+    @low_chamber_general_vote_location = 'http://opendata.camara.cl/wscamaradiputados.asmx/getVotaciones_Boletin?prmBoletin='
+    @low_chamber_detail_vote_location = 'http://opendata.camara.cl/wscamaradiputados.asmx/getVotacion_Detalle?prmVotacionID='
 	end
 
 	def doc_locations
-		# bulletins = 9407.downto(1)
-		# bulletins.map {|b| @location + b.to_s}
-    [@location + '6989', @location + '6927']
-	end
+    doc = HTTParty.get(@update_location + @last_update).body
+    xml = Nokogiri::XML(doc)
+    projects = xml.xpath('//boletin').map {|x| x.text}
+    locations = projects.map {|x| @location + x.split('-')[0]}
+  end
 
 	def save bill
 		result_code = HTTParty.get([@API_url, @model, @id].join("/"), headers: {"Accept"=>"*/*"}).code#{|response, request, result| result.code }
@@ -76,14 +79,14 @@ class BillInfo < StorageableInfo
 
     bill.motions = info[:motions]
 
-    @id = info[:uid]
     bill
   end
 
   def get_info doc
     info = Hash.new
     xml = Nokogiri::XML(doc)
-		info[:uid] = xml.at_css('boletin').text() if xml.at_css('boletin')
+    info[:uid] = xml.at_css('boletin').text() if xml.at_css('boletin')
+    @id = info[:uid]
 		info[:title] = xml.at_css('titulo').text() if xml.at_css('titulo')
 		info[:creation_date] = xml.at_css('fecha_ingreso').text() if xml.at_css('fecha_ingreso')
 		info[:source] = xml.at_css('iniciativa').text() if xml.at_css('iniciativa')
@@ -102,11 +105,138 @@ class BillInfo < StorageableInfo
 		model_fields.keys.each do |field|
 			info[field] = get_model_field_data xml, field
 		end
-    get_voting_data xml, info
-		info
+    get_high_chamber_voting_data xml, info
+    get_low_chamber_voting_data info
+    info
   end
 
-  def get_voting_data nokogiri_xml, info
+  def get_low_chamber_voting_data info
+    response_voting = HTTParty.get(@low_chamber_general_vote_location + @id, :content_type => :xml)
+    response_voting = response_voting['Votaciones']
+
+    if !response_voting.nil?
+      if response_voting['Votacion'].is_a? Array
+        response_voting['Votacion'].each do |voting|
+          votes, pair_ups = get_details_of_voting voting['ID']
+          record = get_low_chamber_voting_info voting, votes, pair_ups
+          info[:motions] = [] if info[:motions] == nil
+          info[:motions] << record
+        end
+      else
+        votes, pair_ups = get_details_of_voting response_voting['Votacion']['ID']
+        record = get_low_chamber_voting_info response_voting['Votacion'], votes, pair_ups
+        info[:motions] = [] if info[:motions] == nil
+        info[:motions] << record
+      end
+    end
+  end
+
+  def get_details_of_voting voting_id
+    response = HTTParty.get(@low_chamber_detail_vote_location + voting_id, :content_type => :xml)
+    response_votes = response['Votacion']['Votos']['Voto']
+    response_pair_up = if response['Votacion']['Pareos'].nil? then nil else response['Votacion']['Pareos']['Pareo'] end
+    votes = Array.new
+    response_votes.each do |single_vote|
+      vote = Hash.new
+      vote['voter_id'] = single_vote['Diputado']['Apellido_Paterno'] + " " + single_vote['Diputado']['Apellido_Materno'] + ", " + single_vote['Diputado']['Nombre']
+      case single_vote['Opcion']['Codigo']
+      when '0' #Negativo
+        vote['option'] = "NO"
+      when '1' #Afirmativo
+        vote['option'] = "SI"
+      when '2' #Abstencion
+        vote['option'] = "ABSTENCION"
+      else
+        vote['option'] = "Sin información"
+      end
+      votes << vote
+    end
+
+    if !response_pair_up.nil?
+      if response_pair_up.is_a? Array
+        pair_ups = Array.new
+        i = 1
+        response_pair_up.each do |single_pair_up|
+          # first pair
+          pair_up1 = Hash.new
+          pair_up1['voter_id'] = single_pair_up['Diputado1']['Apellido_Paterno'] + " " + single_pair_up['Diputado1']['Apellido_Materno'] + ", " + single_pair_up['Diputado1']['Nombre']
+          pair_up1['option'] = "PAREO " + i.to_s #paired
+          pair_ups << pair_up1
+
+          # second pair
+          pair_up2 = Hash.new
+          pair_up2['voter_id'] = single_pair_up['Diputado2']['Apellido_Paterno'] + " " + single_pair_up['Diputado2']['Apellido_Materno'] + ", " + single_pair_up['Diputado2']['Nombre']
+          pair_up2['option'] = "PAREO " + i.to_s
+          pair_ups << pair_up2
+          i = i + 1
+        end
+      else
+        single_pair_up = response_pair_up
+        pair_ups = Array.new
+        i = 1
+        # first pair
+        pair_up1 = Hash.new
+        pair_up1['voter_id'] = single_pair_up['Diputado1']['Apellido_Paterno'] + " " + single_pair_up['Diputado1']['Apellido_Materno'] + ", " + single_pair_up['Diputado1']['Nombre']
+        pair_up1['option'] = "PAREO " + i.to_s #paired
+        pair_ups << pair_up1
+
+        # second pair
+        pair_up2 = Hash.new
+        pair_up2['voter_id'] = single_pair_up['Diputado2']['Apellido_Paterno'] + " " + single_pair_up['Diputado2']['Apellido_Materno'] + ", " + single_pair_up['Diputado2']['Nombre']
+        pair_up2['option'] = "PAREO " + i.to_s
+        pair_ups << pair_up2
+      end
+    end
+    return votes, pair_ups
+  end
+
+  def get_low_chamber_voting_info voting, votes, pair_ups
+    motion = BillitMotion.new
+    motion.organization = "C.Diputados"
+    motion.date = voting['Fecha']
+    motion.text = if voting['Articulo'].nil? then 'Sin título' else voting['Articulo'].strip end
+    motion.requirement = voting['Quorum']['__content__']
+    motion.result = voting['Resultado']['__content__']
+    motion.session = voting['Sesion']['ID']
+    motion.vote_events = []
+
+    vote_event = BillitVoteEvent.new
+    #Counts
+    vote_event.counts = []
+    count = BillitCount.new
+    count.option = "SI"
+    count.value = voting['TotalAfirmativos'].to_i
+    vote_event.counts << count
+
+    count = BillitCount.new
+    count.option = "NO"
+    count.value = voting['TotalNegativos'].to_i
+    vote_event.counts << count
+
+    count = BillitCount.new
+    count.option = "ABSTENCION"
+    count.value = voting['TotalAbstenciones'].to_i
+    vote_event.counts << count
+
+    count = BillitCount.new
+    count.option = "PAREO"
+    count.value = pair_ups.count
+    vote_event.counts << count
+
+    #Votes
+    vote_event.votes = []
+    votes_array = votes + pair_ups
+    votes_array.each do |single_vote|
+      vote = BillitVote.new
+      vote.voter_id = single_vote["voter_id"]
+      vote.option = single_vote["option"]
+      vote_event.votes << vote
+    end
+    motion.vote_events << vote_event
+    return motion
+  end
+
+  def get_high_chamber_voting_data nokogiri_xml, info
     require 'active_support/core_ext/hash/conversions'
     hash = Hash.from_xml(nokogiri_xml.to_s)
     if hash['proyectos']['proyecto']['votaciones'].blank?

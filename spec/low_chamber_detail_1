@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Votacion xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.org/">
+  <ID>15842</ID>
+  <Fecha>2012-09-13T10:43:54</Fecha>
+  <Tipo Codigo="3">General y particular</Tipo>
+  <Resultado Codigo="1">Aprobado</Resultado>
+  <Quorum Codigo="2">Quorum Simple</Quorum>
+  <Sesion>
+    <ID>2854</ID>
+    <Numero>81</Numero>
+    <Fecha>2012-09-13T10:12:00</Fecha>
+    <FechaTermino>0001-01-01T00:00:00</FechaTermino>
+    <Tipo Codigo="60">Ordinaria</Tipo>
+  </Sesion>
+  <Boletin>8292-13</Boletin>
+  <Tramite Codigo="1">Primer Trámite Constitucional</Tramite>
+  <Informe Codigo="1">Primer Informe</Informe>
+  <TotalAfirmativos>51</TotalAfirmativos>
+  <TotalNegativos>0</TotalNegativos>
+  <TotalAbstenciones>1</TotalAbstenciones>
+  <TotalDispensados>0</TotalDispensados>
+  <Votos>
+    <Voto>
+      <Diputado>
+        <DIPID>967</DIPID>
+        <Nombre>Issa</Nombre>
+        <Apellido_Paterno>Kort</Apellido_Paterno>
+        <Apellido_Materno>Garriga</Apellido_Materno>
+      </Diputado>
+      <Opcion Codigo="1">Afirmativo</Opcion>
+    </Voto>
+    <Voto>
+      <Diputado>
+        <DIPID>966</DIPID>
+        <Nombre>Joel</Nombre>
+        <Apellido_Paterno>Rosales</Apellido_Paterno>
+        <Apellido_Materno>Guzmán</Apellido_Materno>
+      </Diputado>
+      <Opcion Codigo="1">Afirmativo</Opcion>
+    </Voto>
+  </Votos>
+  <Pareos>
+    <Pareo>
+      <Diputado1>
+        <DIPID>809</DIPID>
+        <Nombre>Gonzalo</Nombre>
+        <Apellido_Paterno>Arenas</Apellido_Paterno>
+        <Apellido_Materno>Hödar</Apellido_Materno>
+      </Diputado1>
+      <Diputado2>
+        <DIPID>839</DIPID>
+        <Nombre>Ramón</Nombre>
+        <Apellido_Paterno>Farías</Apellido_Paterno>
+        <Apellido_Materno>Ponce</Apellido_Materno>
+      </Diputado2>
+    </Pareo>
+  </Pareos>
+</Votacion>

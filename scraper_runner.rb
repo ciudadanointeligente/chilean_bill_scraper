@@ -1,6 +1,6 @@
 # coding: utf-8
-require './bill_info'
+require './bill_scraper'
 
 if !(defined? Test::Unit::TestCase)
-	BillInfo.new.process
+	BillScraper.new.process
 end

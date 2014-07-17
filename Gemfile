@@ -3,7 +3,8 @@ source 'http://rubygems.org'
 # Utility classes, JSON and timezone helpers
  gem 'nokogiri'
  gem 'rest-client'
- gem 'httparty'
+ gem 'httparty', '0.12.0'
+ gem 'webmock'
 
 # PDF reader
  gem 'pdf-reader'
